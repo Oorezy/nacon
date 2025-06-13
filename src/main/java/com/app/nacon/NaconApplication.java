@@ -12,11 +12,9 @@ public class NaconApplication {
 
     ScrapingService scrapingService;
 
-    public static void main(final String[] args) throws IOException {
-//        ScrapingService scrapingService = new ScrapingService();
+    public static void main(final String[] args) {
 
         SpringApplication.run(NaconApplication.class, args);
-//        scrapingService.scrape2();
     }
 
 }
