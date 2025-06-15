@@ -4,6 +4,7 @@ import com.app.nacon.service.TrackingService;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
@@ -22,7 +23,13 @@ public class HomeResource {
     }
 
     @GetMapping("/tracking/{trackingNumber}")
-    public Mono<TrackingResponse> getEventDateTime(@PathVariable String trackingNumber) {
+    public String getEventDateTime(@PathVariable String trackingNumber) {
         return trackingService.getETA(trackingNumber);
     }
+
+    @PutMapping("/tracking/{trackingNumber}")
+    public Mono<String> getDateTime(@PathVariable String trackingNumber) {
+        return trackingService.postContainerInfo(trackingNumber);
+    }
+
 }

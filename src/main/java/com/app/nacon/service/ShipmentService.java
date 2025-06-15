@@ -13,9 +13,11 @@ import org.springframework.stereotype.Service;
 public class ShipmentService {
 
     private final ShipmentRepository shipmentRepository;
+    private final TrackingService trackingService;
 
-    public ShipmentService(final ShipmentRepository shipmentRepository) {
+    public ShipmentService(final ShipmentRepository shipmentRepository, TrackingService trackingService) {
         this.shipmentRepository = shipmentRepository;
+        this.trackingService = trackingService;
     }
 
     public List<ShipmentDTO> findAll() {
@@ -33,6 +35,7 @@ public class ShipmentService {
 
     public ShipmentDTO create(final ShipmentDTO shipmentDTO) {
         final Shipment shipment = new Shipment();
+//        trackingService.postContainerInfo(shipmentDTO.getBillLandingNo());
         mapToEntity(shipmentDTO, shipment);
         return mapToDTO(shipmentRepository.save(shipment), new ShipmentDTO());
     }

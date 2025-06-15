@@ -2,22 +2,63 @@ package com.app.nacon.service;
 
 import com.app.nacon.model.TrackingResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 @Service
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class TrackingService {
 
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient webClient;
 
-    public Mono<TrackingResponse> getETA(String trackingId) {
-
-        WebClient webClient = webClientBuilder.baseUrl("https://shipsgo.com")
+    public TrackingService(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.baseUrl("https://shipsgo.com")
                 .build();
-        String authCode = "6befb9616038faf26ee7fc4f375cb13d";
+    }
+
+    @Value("${shipsGo.authCode}")
+    String authCode;
+
+    public String getETA(String trackingId) {
+
+        Mono<TrackingResponse> response = callApi(trackingId);
+        return response
+                .map(trackingResponse -> {
+                    String eta = trackingResponse.getEta();
+                    String firstEta = trackingResponse.getFirstEta();
+                    return (eta == null || eta.isEmpty()) ? firstEta : eta;
+                })
+                .block();
+    }
+
+//    @Async
+    public Mono<String> postContainerInfo(String blReference) {
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("authCode", authCode);
+        formData.add("shippingLine", "ONE LINE");
+        formData.add("blContainersRef", "ONEYSHAF89995800");
+        return webClient.post()
+                .uri("/api/v1.2/ContainerService/PostCustomContainerFormWithBl")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(BodyInserters.fromFormData(formData))
+                .retrieve()
+                .bodyToMono(String.class)
+                .onErrorResume(error -> {
+                    // Return the exception message as the response
+                    return Mono.just("Error occurred: " + error.getMessage());
+                });
+
+    }
+
+    private Mono<TrackingResponse> callApi(String trackingId) {
 
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -36,7 +77,7 @@ public class TrackingService {
     }
 
 
-    public Mono<String> getTrackingInfo(String trackingNumber) {
+    /*public Mono<String> getTrackingInfo(String trackingNumber) {
         // Create a WebClient instance
         WebClient webClient = webClientBuilder.baseUrl("https://apis.cma-cgm.net/operation/trackandtrace/v1")
                 .defaultHeader("KeyId","NvluGjAGLMkA78w1HB8OpmsYNFLtxyTQ")
@@ -50,7 +91,7 @@ public class TrackingService {
                 .retrieve()
                 .bodyToMono(String.class)  // Convert response body to String (or an object)
                 .onErrorResume(WebClientResponseException.class, e -> Mono.just("Error: " + e.getMessage()));
-    }
+    }*/
 
 
                 /*.bodyToMono(TrackingResponse.class)  // Map the response to TrackingEventResponse
