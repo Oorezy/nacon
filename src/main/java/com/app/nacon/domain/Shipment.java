@@ -85,6 +85,8 @@ public class Shipment {
     @JsonIgnore
     private String requestId;
 
+    private String vessel;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private OffsetDateTime dateCreated;
