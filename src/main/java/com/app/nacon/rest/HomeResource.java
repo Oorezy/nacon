@@ -1,13 +1,13 @@
 package com.app.nacon.rest;
 
-import com.app.nacon.model.TrackingResponse;
 import com.app.nacon.service.TrackingService;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-
+@CrossOrigin
 @RestController
 public class HomeResource {
     private final TrackingService trackingService;
