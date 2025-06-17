@@ -2,6 +2,8 @@ package com.app.nacon.model;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import java.time.LocalDate;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +30,7 @@ public class ShipmentDTO {
     private String status;
 
     @Size(max = 255)
-    private String eta;
+    private LocalDate eta;
 
     @Size(max = 255)
     private String shippingReleasing;

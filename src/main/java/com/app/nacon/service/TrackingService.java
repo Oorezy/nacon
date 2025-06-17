@@ -3,6 +3,7 @@ package com.app.nacon.service;
 import com.app.nacon.model.TrackingResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -25,6 +26,7 @@ public class TrackingService {
     @Value("${shipsGo.authCode}")
     String authCode;
 
+//    @Async
     public TrackingResponse getETA(String trackingId) {
 
         Mono<TrackingResponse> response = callApi(trackingId);

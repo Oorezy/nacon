@@ -2,6 +2,7 @@ package com.app.nacon.domain;
 
 import com.app.nacon.model.ShippingLine;
 import com.app.nacon.model.ShippingStatus;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +13,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
+
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.Getter;
@@ -60,8 +63,8 @@ public class Shipment {
     @Column
     private String status;
 
-    @Column
-    private String eta;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate eta;
 
     @Column
     private String shippingReleasing;
