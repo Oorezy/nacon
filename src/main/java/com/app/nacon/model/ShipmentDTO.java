@@ -29,7 +29,6 @@ public class ShipmentDTO {
 
     private String status;
 
-    @Size(max = 255)
     private LocalDate eta;
 
     @Size(max = 255)
