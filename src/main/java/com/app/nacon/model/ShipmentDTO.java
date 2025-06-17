@@ -25,7 +25,7 @@ public class ShipmentDTO {
 
     private ShippingLine shippingLine;
 
-    private ShippingStatus status;
+    private String status;
 
     @Size(max = 255)
     private String eta;
@@ -46,5 +46,8 @@ public class ShipmentDTO {
 
     @Size(max = 255)
     private String portOfDischarge;
+
+    private String vessel;
+
 
 }

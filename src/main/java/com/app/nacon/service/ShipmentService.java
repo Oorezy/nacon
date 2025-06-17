@@ -2,11 +2,17 @@ package com.app.nacon.service;
 
 import com.app.nacon.domain.Shipment;
 import com.app.nacon.model.ShipmentDTO;
+import com.app.nacon.model.TrackingResponse;
 import com.app.nacon.repos.ShipmentRepository;
 import com.app.nacon.util.NotFoundException;
+
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import reactor.core.scheduler.Schedulers;
 
 
 @Service
@@ -20,6 +26,31 @@ public class ShipmentService {
         this.trackingService = trackingService;
     }
 
+//    @Scheduled(fixedRate = 21600000)
+    private void refresh(){
+        List<Shipment> shipments = shipmentRepository.findAll();
+        List<Shipment> updatedShipments = new ArrayList<>();
+
+        for (Shipment shipment : shipments) {
+            try {
+                TrackingResponse response = trackingService.getETA(shipment.getBillLandingNo());
+
+                if (response != null) {
+                    String eta = (response.getEta() == null || response.getEta().isEmpty())
+                            ? response.getFirstEta()
+                            : response.getEta();
+
+                    shipment.setEta(eta);
+                    updatedShipments.add(shipment);
+                }
+            } catch (Exception e) {
+                System.err.println("Error updating ETA for B/L No: " + shipment.getBillLandingNo());
+                e.printStackTrace();
+            }
+        }
+        shipmentRepository.saveAll(updatedShipments);
+    }
+
     public List<ShipmentDTO> findAll() {
         final List<Shipment> shipments = shipmentRepository.findAll(Sort.by("id"));
         return shipments.stream()
@@ -28,17 +59,45 @@ public class ShipmentService {
     }
 
     public ShipmentDTO get(final Long id) {
-        return shipmentRepository.findById(id)
-                .map(shipment -> mapToDTO(shipment, new ShipmentDTO()))
-                .orElseThrow(NotFoundException::new);
+        Shipment shipment = shipmentRepository.findById(id).orElse(null);
+        if (shipment!=null){
+//            var eta = trackingService.getETA(shipment.getBillLandingNo());
+//            shipment.setEta(eta);
+            return mapToDTO(shipment, new ShipmentDTO());
+        }
+        return null;
     }
 
     public ShipmentDTO create(final ShipmentDTO shipmentDTO) {
         final Shipment shipment = new Shipment();
-//        trackingService.postContainerInfo(shipmentDTO.getBillLandingNo());
         mapToEntity(shipmentDTO, shipment);
-        return mapToDTO(shipmentRepository.save(shipment), new ShipmentDTO());
+        Shipment entity = shipmentRepository.save(shipment);
+//        getApiDetails(entity);
+        return mapToDTO(entity, new ShipmentDTO());
     }
+
+    @Async
+    public void getApiDetails(Shipment shipment) {
+        trackingService.postContainerInfo(shipment.getBillLandingNo())
+                .publishOn(Schedulers.boundedElastic())
+                .doOnSuccess(response -> {
+
+                    TrackingResponse trackingResponse = trackingService.getETA(shipment.getBillLandingNo());
+                    String eta = (trackingResponse.getEta() == null || trackingResponse.getEta().isEmpty())
+                            ? trackingResponse.getFirstEta()
+                            : trackingResponse.getEta();
+                    shipment.setEta(eta);
+                    shipment.setStatus(trackingResponse.getStatus());
+                    shipment.setVessel(trackingResponse.getVessel());
+                    shipmentRepository.save(shipment);
+                    System.out.println("ETA result: " + trackingResponse);
+                })
+                .doOnError(error -> {
+                    System.err.println("Error: " + error.getMessage());
+                })
+                .subscribe();
+    }
+
 
     public void update(final Long id, final ShipmentDTO shipmentDTO) {
         final Shipment shipment = shipmentRepository.findById(id)
@@ -59,6 +118,7 @@ public class ShipmentService {
         shipmentDTO.setShippingLine(shipment.getShippingLine());
         shipmentDTO.setStatus(shipment.getStatus());
         shipmentDTO.setEta(shipment.getEta());
+        shipmentDTO.setVessel(shipment.getVessel());
         shipmentDTO.setShippingReleasing(shipment.getShippingReleasing());
         shipmentDTO.setCustomDocumentation(shipment.getCustomDocumentation());
         shipmentDTO.setExaminationAndCustomReleasing(shipment.getExaminationAndCustomReleasing());
@@ -73,7 +133,7 @@ public class ShipmentService {
         shipment.setContainerNo(shipmentDTO.getContainerNo());
         shipment.setImporter(shipmentDTO.getImporter());
         shipment.setShippingLine(shipmentDTO.getShippingLine());
-        shipment.setStatus(shipmentDTO.getStatus());
+//        shipment.setStatus(shipmentDTO.getStatus());
 //        shipment.setEta(shipmentDTO.getEta());
         shipment.setShippingReleasing(shipmentDTO.getShippingReleasing());
         shipment.setCustomDocumentation(shipmentDTO.getCustomDocumentation());

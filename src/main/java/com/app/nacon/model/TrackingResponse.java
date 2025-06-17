@@ -14,4 +14,10 @@ public class TrackingResponse {
     @JsonProperty("FirstETA")
     private String firstEta;
 
+    @JsonProperty("Vessel")
+    private String vessel;
+
+    @JsonProperty("Status")
+    private String status;
+
 }

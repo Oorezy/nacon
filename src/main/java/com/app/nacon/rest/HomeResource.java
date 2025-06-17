@@ -1,5 +1,6 @@
 package com.app.nacon.rest;
 
+import com.app.nacon.model.TrackingResponse;
 import com.app.nacon.service.TrackingService;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +24,7 @@ public class HomeResource {
     }
 
     @GetMapping("/tracking/{trackingNumber}")
-    public String getEventDateTime(@PathVariable String trackingNumber) {
+    public TrackingResponse getEventDateTime(@PathVariable String trackingNumber) {
         return trackingService.getETA(trackingNumber);
     }
 

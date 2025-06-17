@@ -58,8 +58,7 @@ public class Shipment {
     private ShippingLine shippingLine;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private ShippingStatus status;
+    private String status;
 
     @Column
     private String eta;
@@ -81,9 +80,6 @@ public class Shipment {
 
     @Column
     private String portOfDischarge;
-
-    @JsonIgnore
-    private String requestId;
 
     private String vessel;
 

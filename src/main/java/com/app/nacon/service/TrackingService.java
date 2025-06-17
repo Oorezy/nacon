@@ -1,10 +1,8 @@
 package com.app.nacon.service;
 
 import com.app.nacon.model.TrackingResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -27,15 +25,15 @@ public class TrackingService {
     @Value("${shipsGo.authCode}")
     String authCode;
 
-    public String getETA(String trackingId) {
+    public TrackingResponse getETA(String trackingId) {
 
         Mono<TrackingResponse> response = callApi(trackingId);
         return response
-                .map(trackingResponse -> {
-                    String eta = trackingResponse.getEta();
-                    String firstEta = trackingResponse.getFirstEta();
-                    return (eta == null || eta.isEmpty()) ? firstEta : eta;
-                })
+//                .map(trackingResponse -> {
+//                    String eta = trackingResponse.getEta();
+//                    String firstEta = trackingResponse.getFirstEta();
+//                    return (eta == null || eta.isEmpty()) ? firstEta : eta;
+//                })
                 .block();
     }
 
@@ -43,8 +41,9 @@ public class TrackingService {
     public Mono<String> postContainerInfo(String blReference) {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("authCode", authCode);
-        formData.add("shippingLine", "ONE LINE");
-        formData.add("blContainersRef", "ONEYSHAF89995800");
+//        formData.add("shippingLine", "ONE LINE");
+//        formData.add("blContainersRef", "ONEYSHAF89995800");
+        formData.add("blContainersRef", blReference);
         return webClient.post()
                 .uri("/api/v1.2/ContainerService/PostCustomContainerFormWithBl")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
