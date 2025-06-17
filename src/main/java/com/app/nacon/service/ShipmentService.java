@@ -36,11 +36,7 @@ public class ShipmentService {
                 TrackingResponse response = trackingService.getETA(shipment.getBillLandingNo());
 
                 if (response != null) {
-                    String eta = (response.getEta() == null || response.getEta().isEmpty())
-                            ? response.getFirstEta()
-                            : response.getEta();
-
-                    shipment.setEta(LocalDate.parse(eta));
+                    shipment.setEta(LocalDate.parse(response.getArrival().getEta()));
                     shipment.setStatus(response.getStatus());
                     shipment.setVessel(response.getVessel());
                     updatedShipments.add(shipment);
@@ -86,10 +82,7 @@ public class ShipmentService {
                 .doOnSuccess(response -> {
 
                     TrackingResponse trackingResponse = trackingService.getETA(shipment.getBillLandingNo());
-                    String eta = (trackingResponse.getEta() == null || trackingResponse.getEta().isEmpty())
-                            ? trackingResponse.getFirstEta()
-                            : trackingResponse.getEta();
-                    shipment.setEta(LocalDate.parse(eta));
+                    shipment.setEta(LocalDate.parse(trackingResponse.getArrival().getEta()));
                     shipment.setStatus(trackingResponse.getStatus());
                     shipment.setVessel(trackingResponse.getVessel());
                     shipmentRepository.save(shipment);
